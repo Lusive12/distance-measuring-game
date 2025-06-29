@@ -1,28 +1,30 @@
-const mysql = require('mysql2/promise');
+const mysql = require("mysql2/promise");
 
 //Setup Database Connection Pool - initialize setup mysql
 const pool = mysql.createPool({
-    host: '127.0.0.1', 
-    port: 3307,
-    user: 'root',
-    password: '', 
-    database: 'distance_measuring_game',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+  host: "127.0.0.1",
+  port: 3306,
+  user: "root",
+  password: "",
+  database: "distance_measuring_game",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
 // ** NEW: Added a connection test to see detailed errors on startup **
-pool.getConnection()
-    .then(connection => {
-        console.log('✅ Database connected successfully!');
-        connection.release(); // Release the connection back to the pool
-    })
-    .catch(err => {
-        console.error('❌ FATAL: Database connection failed. Check your credentials and if the server is running.');
-        console.error(err); // Log the detailed MySQL error
-    });
-
+pool
+  .getConnection()
+  .then((connection) => {
+    console.log("✅ Database connected successfully!");
+    connection.release(); // Release the connection back to the pool
+  })
+  .catch((err) => {
+    console.error(
+      "❌ FATAL: Database connection failed. Check your credentials and if the server is running."
+    );
+    console.error(err); // Log the detailed MySQL error
+  });
 
 /**
  * Finds a player by their ID to verify they exist.
@@ -31,15 +33,13 @@ pool.getConnection()
  */
 async function findPlayerById(id) {
   try {
-    const [rows] = await pool.query('SELECT * FROM players WHERE id = ?', [id]);
+    const [rows] = await pool.query("SELECT * FROM players WHERE id = ?", [id]);
     return rows[0] || null; // Return the player or null
   } catch (error) {
     console.error(`Database error in findPlayerById for ID: ${id}`, error);
     throw error;
   }
-} 
-
-
+}
 
 /**
  * Finds a player by their username. If they don't exist, a new player is created.
@@ -54,16 +54,24 @@ async function findOrCreatePlayer(username) {
     await connection.beginTransaction();
 
     // Look for the player
-    let [rows] = await connection.query('SELECT * FROM players WHERE username = ?', [username]);
+    let [rows] = await connection.query(
+      "SELECT * FROM players WHERE username = ?",
+      [username]
+    );
     let player = rows[0];
 
     // If player does not exist, create them
     if (!player) {
       console.log(`Player '${username}' not found. Creating new player.`);
-      const [result] = await connection.query('INSERT INTO players(username) VALUES (?)', [username]);
-      
+      const [result] = await connection.query(
+        "INSERT INTO players(username) VALUES (?)",
+        [username]
+      );
+
       // After inserting, we fetch the newly created player to get their ID and other details
-      [rows] = await connection.query('SELECT * FROM players WHERE id = ?', [result.insertId]);
+      [rows] = await connection.query("SELECT * FROM players WHERE id = ?", [
+        result.insertId,
+      ]);
       player = rows[0];
     } else {
       console.log(`Player '${username}' found with ID: ${player.id}`);
@@ -72,11 +80,13 @@ async function findOrCreatePlayer(username) {
     // Commit the transaction
     await connection.commit();
     return player;
-
   } catch (error) {
     // If any error occurs, roll back the transaction
     await connection.rollback();
-    console.error(`Database error in findOrCreatePlayer for user: ${username}`, error);
+    console.error(
+      `Database error in findOrCreatePlayer for user: ${username}`,
+      error
+    );
     throw error; // Re-throw the error to be handled by the caller
   } finally {
     // ALWAYS release the connection back to the pool
@@ -92,15 +102,19 @@ async function findOrCreatePlayer(username) {
  */
 async function saveScore(playerId, score) {
   try {
-    const [result] = await pool.query('INSERT INTO scores (player_id, score) VALUES (?, ?)', [playerId, score]);
-    console.log(`Score of ${score} saved for player ID ${playerId}. Insert ID: ${result.insertId}`);
+    const [result] = await pool.query(
+      "INSERT INTO scores (player_id, score) VALUES (?, ?)",
+      [playerId, score]
+    );
+    console.log(
+      `Score of ${score} saved for player ID ${playerId}. Insert ID: ${result.insertId}`
+    );
     return result;
   } catch (error) {
-    console.error('Error saving score:', error);
+    console.error("Error saving score:", error);
     throw error;
   }
 }
-
 
 /**
  * Retrieves the top 10 players based on their highest score.
@@ -117,10 +131,10 @@ async function getLeaderboard() {
       LIMIT 10;
     `;
     const [rows] = await pool.query(query);
-    console.log('Leaderboard data fetched successfully.');
+    console.log("Leaderboard data fetched successfully.");
     return rows;
   } catch (error) {
-    console.error('Error fetching leaderboard:', error);
+    console.error("Error fetching leaderboard:", error);
     throw error;
   }
 }
@@ -130,6 +144,5 @@ module.exports = {
   findOrCreatePlayer,
   saveScore,
   getLeaderboard,
-  findPlayerById
+  findPlayerById,
 };
-
