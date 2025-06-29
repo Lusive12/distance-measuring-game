@@ -48,49 +48,29 @@ async function findPlayerById(id) {
  * @returns {Promise<object>} A promise that resolves to the player object (e.g., { id, username }).
  */
 async function findOrCreatePlayer(username) {
-  const connection = await pool.getConnection();
   try {
-    // Start a transaction
-    await connection.beginTransaction();
-
-    // Look for the player
-    let [rows] = await connection.query(
-      "SELECT * FROM players WHERE username = ?",
+    // Langsung INSERT username ke tabel players.
+    const [result] = await pool.query(
+      "INSERT INTO players(username) VALUES (?)",
       [username]
     );
-    let player = rows[0];
 
-    // If player does not exist, create them
-    if (!player) {
-      console.log(`Player '${username}' not found. Creating new player.`);
-      const [result] = await connection.query(
-        "INSERT INTO players(username) VALUES (?)",
-        [username]
-      );
+    // Buat objek player untuk dikembalikan, berisi ID baru dan username.
+    const newPlayer = {
+      id: result.insertId,
+      username: username,
+    };
 
-      // After inserting, we fetch the newly created player to get their ID and other details
-      [rows] = await connection.query("SELECT * FROM players WHERE id = ?", [
-        result.insertId,
-      ]);
-      player = rows[0];
-    } else {
-      console.log(`Player '${username}' found with ID: ${player.id}`);
-    }
-
-    // Commit the transaction
-    await connection.commit();
-    return player;
+    console.log(
+      `Created new session for player '${username}' with new ID: ${newPlayer.id}`
+    );
+    return newPlayer;
   } catch (error) {
-    // If any error occurs, roll back the transaction
-    await connection.rollback();
     console.error(
-      `Database error in findOrCreatePlayer for user: ${username}`,
+      `Database error in createPlayer for user: ${username}`,
       error
     );
-    throw error; // Re-throw the error to be handled by the caller
-  } finally {
-    // ALWAYS release the connection back to the pool
-    connection.release();
+    throw error;
   }
 }
 

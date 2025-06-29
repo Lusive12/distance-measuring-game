@@ -13,18 +13,13 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
 // --- Middleware ---
-// CORS is needed to allow your frontend (on a different domain/port) to communicate with this backend.
 app.use(cors());
-// This middleware parses incoming JSON requests and puts the parsed data in `req.body`.
 app.use(express.json());
-
 app.use(express.static("frontend"));
 
 // --- In-Memory Game State Management ---
-// We use Maps to keep track of active games and player WebSocket connections.
-// This is suitable for a single server instance. For scaling, a service like Redis would be used.
-const activeGames = new Map(); // Key: playerId, Value: { score, lives, questionsAnswered, currentQuestion }
-const clients = new Map(); // Key: playerId, Value: WebSocket connection object
+const activeGames = new Map();
+const clients = new Map();
 
 // --- WebSocket Server Logic ---
 wss.on("connection", (ws) => {
@@ -34,15 +29,25 @@ wss.on("connection", (ws) => {
     try {
       const data = JSON.parse(message);
 
-      // The first message a client sends after connecting should be 'startGame'.
       if (data.type === "startGame" && data.playerId) {
         const { playerId } = data;
-        console.log(`Player ${playerId} is starting a game.`);
 
-        // Associate the WebSocket connection with the player ID
+        // FIX #1: Pastikan game lama (jika ada) untuk player ini sudah bersih
+        if (activeGames.has(playerId)) {
+          console.log(
+            `Found an old game for player ${playerId}. Clearing it before starting a new one.`
+          );
+          activeGames.delete(playerId);
+          const oldSocket = clients.get(playerId);
+          if (oldSocket && oldSocket !== ws) {
+            oldSocket.close();
+          }
+        }
+
+        console.log(`Player ${playerId} is starting a new game.`);
+
         clients.set(playerId, ws);
 
-        // Initialize a new game state for this player
         const newQuestion = generateQuestion();
         activeGames.set(playerId, {
           score: 0,
@@ -51,7 +56,6 @@ wss.on("connection", (ws) => {
           currentQuestion: newQuestion,
         });
 
-        // Send the very first question to the player
         ws.send(
           JSON.stringify({
             type: "newQuestion",
@@ -66,15 +70,31 @@ wss.on("connection", (ws) => {
     }
   });
 
+  // FIX #2: Implementasi pembersihan saat koneksi terputus
   ws.on("close", () => {
     console.log("A client disconnected.");
-    // Here you could add logic to find which player disconnected and clean up their game state if needed.
-    // For now, we'll let game states time out or end naturally.
+    let disconnectedPlayerId = null;
+
+    // Cari tahu playerId mana yang terkait dengan websocket (ws) ini
+    for (const [playerId, clientWs] of clients.entries()) {
+      if (clientWs === ws) {
+        disconnectedPlayerId = playerId;
+        break;
+      }
+    }
+
+    // Jika ditemukan, bersihkan data pemain tersebut
+    if (disconnectedPlayerId) {
+      console.log(
+        `Cleaning up stale game state for player ${disconnectedPlayerId}.`
+      );
+      activeGames.delete(disconnectedPlayerId);
+      clients.delete(disconnectedPlayerId);
+    }
   });
 });
 
 // --- REST API Endpoints ---
-
 app.get("/", (req, res) => {
   res
     .status(200)
@@ -83,7 +103,6 @@ app.get("/", (req, res) => {
     );
 });
 
-// Endpoint for the frontend to log in a player.
 app.post("/api/player", async (req, res) => {
   const { username } = req.body;
   if (!username || username.trim().length === 0) {
@@ -94,39 +113,33 @@ app.post("/api/player", async (req, res) => {
     res.status(200).json(player);
   } catch (error) {
     res.status(500).json({
-      error: "A database error occurred. See details.",
-      details: error.message, // This is the REAL error message from the database driver
-      code: error.code, // This is the MySQL error code (e.g., ER_NO_SUCH_TABLE)
+      error: "A database error occurred.",
+      details: error.message,
+      code: error.code,
     });
   }
 });
 
-// Endpoint for the ESP32 to submit a measured distance.
 app.post("/api/submit", async (req, res) => {
   const { playerId, distance } = req.body;
   if (playerId === undefined || distance === undefined) {
-    return res
-      .status(400)
-      .json({ error: "Missing playerId or distance in request body." });
+    return res.status(400).json({ error: "Missing playerId or distance." });
   }
 
   const playerExists = await db.findPlayerById(playerId);
   if (!playerExists) {
-    return res.status(404).json({
-      error: `Invalid playerId. Player with ID ${playerId} does not exist.`,
-    });
+    return res.status(404).json({ error: `Invalid playerId: ${playerId}.` });
   }
 
   const gameState = activeGames.get(playerId);
   if (!gameState) {
-    return res.status(404).json({
-      error: "No active game found for this player. Please start a new game.",
-    });
+    return res
+      .status(404)
+      .json({ error: "No active game found for this player." });
   }
 
   const isCorrect = checkAnswer(gameState.currentQuestion, distance);
 
-  // Update game state
   if (isCorrect) {
     gameState.score++;
     gameState.questionsAnswered++;
@@ -136,12 +149,9 @@ app.post("/api/submit", async (req, res) => {
 
   const playerSocket = clients.get(playerId);
   if (!playerSocket) {
-    return res
-      .status(500)
-      .json({ error: "Internal server error: Player socket not found." });
+    return res.status(500).json({ error: "Player socket not found." });
   }
 
-  // Notify frontend of the result
   playerSocket.send(
     JSON.stringify({
       type: "roundResult",
@@ -152,7 +162,6 @@ app.post("/api/submit", async (req, res) => {
     })
   );
 
-  // Check for Game Over condition
   if (gameState.lives <= 0) {
     console.log(
       `Game over for player ${playerId}. Final score: ${gameState.score}`
@@ -167,15 +176,17 @@ app.post("/api/submit", async (req, res) => {
       JSON.stringify({ type: "gameOver", finalScore: gameState.score })
     );
 
-    // Clean up
+    // FIX #3: Tutup koneksi secara eksplisit dari server
+    playerSocket.close();
+
+    // Pembersihan segera
     activeGames.delete(playerId);
     clients.delete(playerId);
   } else {
-    // Game continues: generate the next question and send it after a delay
     setTimeout(() => {
       const nextQuestion = generateQuestion();
       gameState.currentQuestion = nextQuestion;
-      activeGames.set(playerId, gameState); // Update state with new question
+      activeGames.set(playerId, gameState);
 
       if (playerSocket.readyState === playerSocket.OPEN) {
         playerSocket.send(
@@ -187,22 +198,17 @@ app.post("/api/submit", async (req, res) => {
           })
         );
       }
-    }, 2500); // 2.5-second delay to let the player see the result
+    }, 2500);
   }
-
-  // Respond to the ESP32
   res.status(200).json({ status: "Received", correct: isCorrect });
 });
 
-// Endpoint to fetch the leaderboard.
 app.get("/api/leaderboard", async (req, res) => {
   try {
     const leaderboardData = await db.getLeaderboard();
     res.status(200).json(leaderboardData);
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Database error while fetching leaderboard." });
+    res.status(500).json({ error: "Database error fetching leaderboard." });
   }
 });
 
