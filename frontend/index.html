@@ -1,72 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Distance Measuring Game</title>
     <!-- Link to our custom stylesheet -->
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <!-- This main container will hold all our different "views" or "screens" -->
     <div id="app-container">
-
-        <!-- Page 1: Login View -->
-        <div id="login-view" class="view active-view">
-            <div class="card">
-                <h1>Target Game</h1>
-                <p>Enter your name to begin</p>
-                <form id="login-form">
-                    <input type="text" id="username-input" placeholder="Your Name" autocomplete="off" required>
-                    <button id="login-button" type="submit">Continue</button>
-                </form>
-            </div>
+      <!-- Page 1: Login View -->
+      <div id="login-view" class="view active-view">
+        <div class="card">
+          <h1>Target Game</h1>
+          <p>Enter your name to begin</p>
+          <form id="login-form">
+            <input
+              type="text"
+              id="username-input"
+              placeholder="Your Name"
+              autocomplete="off"
+              required
+            />
+            <button id="login-button" type="submit">Continue</button>
+          </form>
         </div>
+      </div>
 
-        <!-- Page 2: Game View -->
-        <div id="game-view" class="view">
-            <div class="game-header">
-                <span>Player: <b id="player-name-display"></b></span>
-                <span>Score: <b id="score-display">0</b></span>
-                <span>Lives: <b id="lives-display">❤️❤️❤️</b></span>
-            </div>
-            <div class="game-board">
-                <div class="game-content">
-                    <h2 id="question-text">Loading question...</h2>
-                    <p class="instruction-text">Aim your sensor and press the button!</p>
-                </div>
-                <!-- This overlay will appear to show "Correct" or "Wrong" -->
-                <div id="result-overlay">
-                    <h1 id="result-text"></h1>
-                    <p id="result-distance"></p>
-                </div>
-            </div>
+      <!-- Page 2: Game View -->
+      <div id="game-view" class="view">
+        <div class="game-header">
+          <span>Player: <b id="player-name-display"></b></span>
+          <span>Score: <b id="score-display">0</b></span>
+          <span>Lives: <b id="lives-display">❤️❤️❤️</b></span>
         </div>
+        <div class="game-board">
+          <div class="game-content">
+            <h2 id="question-text">Loading question...</h2>
+            <p class="instruction-text">
+              Aim your sensor and press the button!
+            </p>
+          </div>
+          <!-- This overlay will appear to show "Correct" or "Wrong" -->
+          <div id="result-overlay">
+            <h1 id="result-text"></h1>
+            <p id="result-distance"></p>
+          </div>
+        </div>
+      </div>
 
-        <!-- Page 3: Game Over View -->
-        <div id="game-over-view" class="view">
-             <div class="card">
-                <h1>Game Over!</h1>
-                <p class="final-score-text">Your Final Score:</p>
-                <p class="final-score-value" id="final-score-display">0</p>
-                <button id="play-again-button">Play Again</button>
-            </div>
+      <!-- Page 3: Game Over View -->
+      <div id="game-over-view" class="view">
+        <div class="card">
+          <h1>Game Over!</h1>
+          <p class="final-score-text">Your Final Score:</p>
+          <p class="final-score-value" id="final-score-display">0</p>
+          <button id="play-again-button">Play Again</button>
         </div>
+      </div>
     </div>
-
 
     <!-- The Leaderboard will be a separate, persistent element -->
     <div class="leaderboard-container">
-        <h2>🏆 Leaderboard</h2>
+      <h2>🏆 Leaderboard & Statistik</h2>
+      <div class="charts-wrapper">
         <div class="chart-container">
-            <canvas id="leaderboard-chart"></canvas>
+          <h3>Peringkat Teratas</h3>
+          <canvas id="leaderboard-chart"></canvas>
         </div>
+        <div class="chart-container">
+          <h3>Skor Paling Sering Didapat</h3>
+          <canvas id="scoreDistributionChart"></canvas>
+        </div>
+      </div>
     </div>
 
     <!-- JavaScript libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Our custom application logic -->
     <script src="app.js"></script>
-</body>
+  </body>
 </html>

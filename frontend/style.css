@@ -1,175 +1,205 @@
 /* style.css */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap");
 
 :root {
-    --primary-color: #2980b9;
-    --success-color: #27ae60;
-    --danger-color: #c0392b;
-    --background-color: #ecf0f1;
-    --card-background: #ffffff;
-    --text-color: #34495e;
+  --primary-color: #2980b9;
+  --success-color: #27ae60;
+  --danger-color: #c0392b;
+  --background-color: #ecf0f1;
+  --card-background: #ffffff;
+  --text-color: #34495e;
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--background-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin: 0;
-    min-height: 100vh;
-    box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  background-color: var(--background-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  margin: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-h1, h2 {
-    font-family: 'Press Start 2P', cursive;
-    color: var(--text-color);
-    text-align: center;
+h1,
+h2 {
+  font-family: "Press Start 2P", cursive;
+  color: var(--text-color);
+  text-align: center;
 }
 
 #app-container {
-    width: 100%;
-    max-width: 600px;
-    margin-bottom: 30px;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 30px;
 }
 
 .view {
-    display: none; /* Hide all views by default */
+  display: none; /* Hide all views by default */
 }
 
 .active-view {
-    display: block; /* Show only the active view */
+  display: block; /* Show only the active view */
 }
 
 .card {
-    background: var(--card-background);
-    padding: 30px 40px;
-    border-radius: 16px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    text-align: center;
+  background: var(--card-background);
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
 #login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 input[type="text"] {
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #bdc3c7;
-    font-size: 1.1rem;
-    text-align: center;
-    transition: border-color 0.3s;
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #bdc3c7;
+  font-size: 1.1rem;
+  text-align: center;
+  transition: border-color 0.3s;
 }
 
 input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary-color);
+  outline: none;
+  border-color: var(--primary-color);
 }
 
 button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    font-family: 'Press Start 2P', cursive;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s, background-color 0.3s;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-family: "Press Start 2P", cursive;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.3s;
 }
 
 button:hover {
-    transform: translateY(-2px);
-    background-color: #3498db;
+  transform: translateY(-2px);
+  background-color: #3498db;
 }
 
 /* Game View Styling */
 .game-header {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap; /* Allows wrapping on smaller screens */
-    gap: 10px;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: var(--card-background);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--card-background);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 .game-header b {
-    font-family: 'Press Start 2P', cursive;
+  font-family: "Press Start 2P", cursive;
 }
 
 .game-board {
-    background: var(--card-background);
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    min-height: 350px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+  background: var(--card-background);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .game-content {
-    text-align: center;
+  text-align: center;
 }
 
 .game-content h2 {
-    font-size: 1.8rem;
-    line-height: 1.4;
-    margin-bottom: 1rem;
+  font-size: 1.8rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
 }
 .instruction-text {
-    color: #7f8c8d;
-    font-size: 1rem;
+  color: #7f8c8d;
+  font-size: 1rem;
 }
 
 #result-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(255, 255, 255, 0.97);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.97);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
 }
 #result-overlay.visible {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }
-#result-text { font-size: 3rem; }
-#result-distance { font-size: 1.2rem; }
+#result-text {
+  font-size: 3rem;
+}
+#result-distance {
+  font-size: 1.2rem;
+}
 
 /* Game Over Styling */
-.final-score-text { font-size: 1.2rem; }
+.final-score-text {
+  font-size: 1.2rem;
+}
 .final-score-value {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin: 1rem 0 2rem 0;
+  font-family: "Press Start 2P", cursive;
+  font-size: 4rem;
+  color: var(--primary-color);
+  margin: 1rem 0 2rem 0;
 }
 
 /* Leaderboard Styling */
 .leaderboard-container {
-    width: 100%;
-    max-width: 600px;
-    background: var(--card-background);
-    padding: 20px 30px;
-    border-radius: 16px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 840px;
+  background: var(--card-background);
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 .chart-container {
-    position: relative;
-    height: 300px;
+  position: relative;
+  height: 300px;
+  margin-bottom: 40px;
+}
+
+.charts-wrapper {
+  display: flex; /* Membuat item di dalamnya sejajar */
+  gap: 20px; /* Memberi jarak 20px antara dua grafik */
+  align-items: flex-start; /* Meratakan item dari atas */
+}
+
+.charts-wrapper .chart-container {
+  flex: 1; /* Membuat setiap kontainer grafik mengambil ruang yang sama */
+  min-width: 0; /* Penting untuk flexbox agar bisa mengecil dengan benar */
+}
+
+.charts-wrapper h3 {
+  text-align: center;
+  font-size: 1rem; /* Ukuran sub-judul untuk setiap grafik */
+  margin-bottom: 15px;
+  font-family: "Roboto", sans-serif; /* Menggunakan font biasa agar tidak terlalu ramai */
+  font-weight: 700;
 }

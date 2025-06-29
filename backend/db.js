@@ -119,10 +119,38 @@ async function getLeaderboard() {
   }
 }
 
+/**
+ * Menghitung distribusi skor: 5 skor teratas yang paling sering didapat.
+ * @returns {Promise<Array<object>>} Array objek berisi { score, timesAchieved }.
+ */
+async function getScoreDistribution() {
+  try {
+    // Query ini melakukan:
+    // 1. SELECT score, COUNT(id) as timesAchieved -> Pilih kolom skor, dan hitung jumlah baris untuk setiap skor (beri nama 'timesAchieved')
+    // 2. FROM scores -> Dari tabel scores
+    // 3. GROUP BY score -> Kelompokkan baris berdasarkan nilai skor yang sama
+    // 4. ORDER BY timesAchieved DESC -> Urutkan hasilnya berdasarkan jumlah pencapaian (paling banyak di atas)
+    // 5. LIMIT 5 -> Ambil hanya 5 baris teratas
+    const query = `
+      SELECT score, COUNT(id) as timesAchieved
+      FROM scores
+      GROUP BY score
+      ORDER BY timesAchieved DESC
+      LIMIT 5;
+    `;
+    const [rows] = await pool.query(query);
+    return rows;
+  } catch (error) {
+    console.error(`Database error in getScoreDistribution`, error);
+    throw error;
+  }
+}
+
 // Export the functions to be used in other parts of the application
 module.exports = {
   findOrCreatePlayer,
   saveScore,
   getLeaderboard,
   findPlayerById,
+  getScoreDistribution,
 };

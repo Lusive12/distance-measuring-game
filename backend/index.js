@@ -203,6 +203,17 @@ app.post("/api/submit", async (req, res) => {
   res.status(200).json({ status: "Received", correct: isCorrect });
 });
 
+app.get("/api/score-distribution", async (req, res) => {
+  try {
+    const distributionData = await db.getScoreDistribution();
+    res.status(200).json(distributionData);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Database error while fetching score distribution." });
+  }
+});
+
 app.get("/api/leaderboard", async (req, res) => {
   try {
     const leaderboardData = await db.getLeaderboard();

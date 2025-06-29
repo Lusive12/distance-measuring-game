@@ -25,13 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Chart
   const leaderboardChartCanvas = document.getElementById("leaderboard-chart");
+  const scoreDistributionCanvas = document.getElementById(
+    "scoreDistributionChart"
+  );
 
   // App State
   let playerId = null;
   let username = "";
   let ws = null;
   let leaderboardChart = null;
-
+  let scoreDistributionChart = null;
   // --- Main Functions ---
 
   function switchView(viewId) {
@@ -150,6 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function showGameOver(finalScore) {
     finalScoreDisplay.textContent = finalScore;
     switchView("game-over-view");
+    fetchAndDrawLeaderboard();
+    fetchAndDrawScoreDistribution();
     if (ws) {
       ws.close(); // Cleanly close the connection now that the game is over
     }
@@ -183,8 +188,31 @@ document.addEventListener("DOMContentLoaded", () => {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+
+          // KUNCI UTAMA: Mengubah orientasi grafik menjadi horizontal
+          indexAxis: "x",
+
           scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            // Sumbu X sekarang adalah sumbu nilai (skor)
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1, // Angka di sumbu skor akan kelipatan 1
+                precision: 0, // Tidak ada angka desimal
+              },
+              title: {
+                display: true,
+                text: "Skor",
+              },
+            },
+            // Sumbu Y sekarang adalah sumbu kategori (nama pemain)
+            x: {
+              title: {
+                display: true,
+                text: "Pemain",
+              },
+              // Tidak perlu konfigurasi khusus, label akan otomatis lurus
+            },
           },
           plugins: {
             legend: { display: false },
@@ -201,6 +229,90 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function fetchAndDrawScoreDistribution() {
+    try {
+      const response = await fetch(`${API_URL}/api/score-distribution`);
+      const data = await response.json();
+
+      // Siapkan data untuk Chart.js
+      // Label adalah nilai skornya (misal: "10 Points")
+      const labels = data.map((item) => `${item.score} Points`);
+      // Data adalah berapa kali skor tersebut dicapai
+      const scores = data.map((item) => item.timesAchieved);
+
+      // Hapus grafik lama sebelum menggambar yang baru (jika ada)
+      if (scoreDistributionChart) {
+        scoreDistributionChart.destroy();
+      }
+
+      scoreDistributionChart = new Chart(scoreDistributionCanvas, {
+        type: "bar", // Tipe grafik bar
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Banyak Kali Dicapai",
+              data: scores,
+              backgroundColor: "rgba(231, 76, 60, 0.6)", // Warna merah
+              borderColor: "rgba(231, 76, 60, 1)",
+              borderWidth: 2,
+              borderRadius: 5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          // indexAxis: 'y', <-- HAPUS ATAU BERI KOMENTAR PADA BARIS INI
+          scales: {
+            // 'y' sekarang adalah sumbu vertikal (jumlah pemain)
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1, // Pastikan sumbu Y adalah bilangan bulat
+                precision: 0,
+              },
+              title: {
+                display: true,
+                text: "Jumlah Pemain",
+              },
+            },
+            // 'x' adalah sumbu horizontal (label skor)
+            x: {
+              ticks: {
+                // KUNCI UTAMA: Izinkan Chart.js untuk melewati label secara otomatis jika terlalu ramai.
+                autoSkip: true,
+
+                // Jarak minimum (dalam piksel) antar label sebelum autoSkip diaktifkan.
+                // Anda bisa sesuaikan nilai ini jika perlu.
+                autoSkipPadding: 10,
+
+                // Putar sedikit labelnya jika membantu (opsional, tapi bisa sangat efektif)
+                maxRotation: 25,
+                minRotation: 0,
+              },
+              title: {
+                display: true,
+                text: "Skor",
+              },
+              // tidak perlu konfigurasi khusus untuk sumbu x saat ini
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => `${context.raw} kali dicapai`,
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to fetch score distribution:", error);
+    }
+  }
+
   // --- Event Listeners ---
   loginForm.addEventListener("submit", login);
   playAgainButton.addEventListener("click", () => {
@@ -212,4 +324,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Initial Load ---
   // Load the leaderboard as soon as the page is ready
   fetchAndDrawLeaderboard();
+  fetchAndDrawScoreDistribution();
 });
