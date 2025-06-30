@@ -1,6 +1,6 @@
 # Distance Target Game: An Interactive ESP32 Project
 
-![Gameplay Sneakpeek](https://drive.google.com/file/d/194gtiirnIRvIctX6sOfSkYgGrV6avT3b/view?usp=drive_link)
+![Gameplay Sneakpeek](/gameplay_preview.jpg)
 
 Welcome to the Distance Target Game, a full-stack interactive project that bridges the gap between the physical and digital worlds. This game challenges players to use a real-world ultrasonic sensor to meet randomly generated distance objectives displayed in a web application.
 
